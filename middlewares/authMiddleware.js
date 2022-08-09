@@ -32,4 +32,17 @@ const protect = asynHandler(async (req, res, next) => {
   }
 });
 
-module.exports = protect;
+const checkAccess = asynHandler(async (req, res, next) => {
+  const { user } = req;
+
+  if (user.role === "ADMIN") {
+    next();
+  } else {
+    res
+      .status(401)
+      .json({ status: 401, message: "Not Authorized. Admin accesses'." });
+    throw new Error("Not Authorized. Admin Accesses'.");
+  }
+});
+
+module.exports = { protect, checkAccess };

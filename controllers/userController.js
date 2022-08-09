@@ -62,6 +62,7 @@ const registerUser = asynHandler(async (req, res) => {
     lName,
     email,
     password: hashedPassword,
+    role: "STAFF",
   });
 
   if (user) {
