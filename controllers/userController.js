@@ -3,6 +3,7 @@ const jwt = require("jsonwebtoken");
 const bcrypt = require("bcryptjs");
 const asynHandler = require("express-async-handler");
 const User = require("../models/userModel");
+const { Task } = require("../models/taskModel");
 
 // @desc Login User
 // @route POST /users/user/login
@@ -22,6 +23,7 @@ const loginUser = asynHandler(async (req, res) => {
       status: 200,
       message: "User Logged in Successfully",
       data: {
+        userId: user._id,
         fName: user.fName,
         lName: user.lName,
         email: user.email,
@@ -87,7 +89,27 @@ const registerUser = asynHandler(async (req, res) => {
 // @route GET /users/user
 // @access Private
 const getUserDetails = asynHandler(async (req, res) => {
-  res.json({ status: 200, data: req.user, message: "User Details" });
+  const { userId } = req.params;
+
+  const user = await User.findOne({
+    _id: mongoose.Types.ObjectId(userId),
+  })
+    .populate(
+      "tasks.assignedBy",
+      "-__v -password -notifications -tasks -createdAt -updatedAt -role -email"
+    )
+    .populate("tasks.task", "-__v")
+    .select("-password");
+
+  if (user) {
+    res.status(200).json({
+      status: 200,
+      data: user,
+      message: "Fetched user Details successfully.",
+    });
+  } else {
+    res.status(404).json({ status: 404, message: "User not found." });
+  }
 });
 
 // Generate JWT

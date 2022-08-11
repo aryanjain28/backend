@@ -44,15 +44,18 @@ const userSchema = new Schema(
     },
     tasks: [
       {
-        isNew: Boolean,
-        taskId: Schema.Types.ObjectId,
-        createdAt: Schema.Types.Date,
-        createdBy: Schema.Types.ObjectId,
+        isNew: { type: Boolean },
+        task: { type: Schema.Types.ObjectId, ref: "Task" },
+        assignedAt: Schema.Types.Date,
+        assignedBy: { type: Schema.Types.ObjectId, ref: "User" },
       },
     ],
   },
-  { timestamps: true }
-);
+  { timestamps: true, versionKey: false }
+).set("toJSON", {
+  virtuals: true,
+  versionKey: false,
+});
 
 const User = mongoose.model("User", userSchema);
 module.exports = User;
