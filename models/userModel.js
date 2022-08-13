@@ -42,14 +42,6 @@ const userSchema = new Schema(
       type: String,
       required: true,
     },
-    tasks: [
-      {
-        isNew: { type: Boolean },
-        task: { type: Schema.Types.ObjectId, ref: "Task" },
-        assignedAt: Schema.Types.Date,
-        assignedBy: { type: Schema.Types.ObjectId, ref: "User" },
-      },
-    ],
   },
   { timestamps: true, versionKey: false }
 ).set("toJSON", {

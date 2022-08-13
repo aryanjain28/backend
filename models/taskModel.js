@@ -17,6 +17,7 @@ const taskTypeSchema = new Schema(
 
 const taskSchema = new Schema(
   {
+    isNew: Boolean,
     name: { type: String, required: true },
     type: {
       type: Schema.Types.ObjectId,
@@ -26,6 +27,8 @@ const taskSchema = new Schema(
     status: { type: String, required: true },
     client: { type: Schema.Types.ObjectId, required: true, ref: "Client" },
     assignee: { type: Schema.Types.ObjectId, required: true, ref: "User" },
+    assignedAt: Schema.Types.Date,
+    assignedBy: { type: Schema.Types.ObjectId, ref: "User" },
     startDate: { type: Schema.Types.Date, required: true },
     endDate: { type: Schema.Types.Date, required: false },
     totalAmount: { type: String, required: false },

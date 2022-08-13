@@ -27,6 +27,7 @@ const loginUser = asynHandler(async (req, res) => {
         fName: user.fName,
         lName: user.lName,
         email: user.email,
+        role: user.role,
         token: generateToken(user._id),
       },
     });
@@ -93,13 +94,7 @@ const getUserDetails = asynHandler(async (req, res) => {
 
   const user = await User.findOne({
     _id: mongoose.Types.ObjectId(userId),
-  })
-    .populate(
-      "tasks.assignedBy",
-      "-__v -password -notifications -tasks -createdAt -updatedAt -role -email"
-    )
-    .populate("tasks.task", "-__v")
-    .select("-password");
+  }).select("-password");
 
   if (user) {
     res.status(200).json({

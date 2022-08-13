@@ -30,8 +30,10 @@ const getTask = asynHandler(async (req, res) => {
 // get all tasks
 const getAllTasks = asynHandler(async (req, res) => {
   const tasks = await Task.find()
+    .populate("createdBy", "-__v -notifications -tasks -password")
     .populate("assignee", "-__v -notifications -tasks -password")
     .populate("client")
+    .populate("type", "-__v -createdAt -createdBy -updatedAt")
     .select("-__v");
 
   if (tasks) {
@@ -54,11 +56,10 @@ const getUsersTasks = asynHandler(async (req, res) => {
     assignee: mongoose.Types.ObjectId(req.user._id),
   })
     .select("-assignee")
+    .populate("assignedBy", { fName: 1, lName: 1, email: 1 })
     .populate("type", { taskTypeName: 1 })
     .populate("client", { clientName: 1, entity: 1 })
     .populate("createdBy", { fName: 1, lName: 1, email: 1 });
-
-  // .populate("createdBy", "fName lName");
 
   if (tasks) {
     res.status(200).json({
@@ -93,22 +94,11 @@ const createNewTask = asynHandler(async (req, res) => {
     assignee: mongoose.Types.ObjectId(assignee),
     createdBy: req.user._id,
     createdAt: new Date(),
+    assignedBy: req.user._id,
+    assignedAt: new Date(),
+    isNew: true,
   });
   if (task) {
-    // Add to assignee's notifications
-    await User.updateMany(
-      { _id: mongoose.Types.ObjectId(assignee) },
-      {
-        $push: {
-          tasks: {
-            isNew: true,
-            task: task._id,
-            assignedAt: task.createdAt,
-            assignedBy: task.createdBy,
-          },
-        },
-      }
-    );
     res.status(201).json({
       status: 201,
       message: "Task Created Successfully",
@@ -126,11 +116,39 @@ const createNewTask = asynHandler(async (req, res) => {
 // update task
 const updateTask = asynHandler(async (req, res) => {
   const { taskId } = req.params;
+  const {
+    name,
+    type,
+    status,
+    startDate,
+    endDate,
+    totalAmount,
+    paidAmount,
+    balanceAmount,
+    assigneeId,
+    clientId,
+  } = req.body.data;
+
+  const isAdmin = req.user.role === "ADMIN";
+
+  const updateBody = {
+    ...(isAdmin && name && { name }),
+    ...(isAdmin && type && { type }),
+    ...(isAdmin && startDate && { startDate }),
+    ...(isAdmin && endDate && { endDate }),
+    ...(isAdmin && assigneeId && { assignee: assigneeId }),
+    ...(status && { status }),
+    ...(totalAmount && { totalAmount }),
+    ...(paidAmount && { paidAmount }),
+    ...(balanceAmount && { balanceAmount }),
+    ...(clientId && { client: clientId }),
+  };
+
   const task = await Task.findOneAndUpdate(
     {
       _id: mongoose.Types.ObjectId(taskId),
     },
-    { ...req.body.data, updatedBy: req.user._id, updatedAt: new Date() },
+    { ...updateBody, updatedBy: req.user._id, updatedAt: new Date() },
     { new: true }
   );
 
