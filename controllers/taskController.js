@@ -68,7 +68,10 @@ const getUsersTasks = asynHandler(async (req, res) => {
   const tasks = await Task.find({
     assignee: mongoose.Types.ObjectId(req.user._id),
   })
-    .select("-assignee")
+    .populate(
+      "assignee",
+      "-__v -notifications -tasks -password -createdAt -updatedAt"
+    )
     .populate("assignedBy", { fName: 1, lName: 1, email: 1 })
     .populate("type", "-__v -createdAt -createdBy -updatedAt")
     .populate("createdBy", { fName: 1, lName: 1, email: 1 })
@@ -159,7 +162,7 @@ const updateTask = asynHandler(async (req, res) => {
   const { taskId } = req.params;
   const {
     name,
-    type,
+    taskTypeId,
     status,
     startDate,
     endDate,
@@ -168,14 +171,14 @@ const updateTask = asynHandler(async (req, res) => {
     balanceAmount,
     assigneeId,
     clientId,
-    entity,
+    clientEntity,
   } = req.body.data;
 
   const isAdmin = req.user.role === "ADMIN";
 
   const updateBody = {
     ...(isAdmin && name && { name }),
-    ...(isAdmin && type && { type }),
+    ...(isAdmin && taskTypeId && { type: taskTypeId }),
     ...(isAdmin && startDate && { startDate }),
     ...(isAdmin && endDate && { endDate }),
     ...(isAdmin && assigneeId && { assignee: assigneeId }),
@@ -184,7 +187,8 @@ const updateTask = asynHandler(async (req, res) => {
     ...(paidAmount && { paidAmount }),
     ...(balanceAmount && { balanceAmount }),
     ...(clientId && { client: { client: clientId } }),
-    ...(clientId && entity && { client: { client: clientId, entity } }),
+    ...(clientId &&
+      clientEntity && { client: { client: clientId, entity: clientEntity } }),
   };
 
   const task = await Task.findOneAndUpdate(
