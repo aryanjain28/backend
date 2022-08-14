@@ -3,7 +3,7 @@ const Schema = mongoose.Schema;
 
 const taskTypeSchema = new Schema(
   {
-    taskTypeName: {
+    name: {
       type: String,
       required: true,
     },
@@ -17,7 +17,7 @@ const taskTypeSchema = new Schema(
 
 const taskSchema = new Schema(
   {
-    isNew: Boolean,
+    isNew: { type: Boolean, required: false },
     name: { type: String, required: true },
     type: {
       type: Schema.Types.ObjectId,
@@ -25,7 +25,10 @@ const taskSchema = new Schema(
       ref: "TaskType",
     },
     status: { type: String, required: true },
-    client: { type: Schema.Types.ObjectId, required: true, ref: "Client" },
+    client: {
+      id: { type: Schema.Types.ObjectId, required: false, ref: "Client" },
+      entity: { type: Schema.Types.String, required: false },
+    },
     assignee: { type: Schema.Types.ObjectId, required: true, ref: "User" },
     assignedAt: Schema.Types.Date,
     assignedBy: { type: Schema.Types.ObjectId, ref: "User" },

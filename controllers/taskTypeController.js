@@ -39,6 +39,20 @@ const createTaskType = asyncHandler(async (req, res) => {
   }
 });
 
+// get taskTypes
+const getTaskTypes = asyncHandler(async (req, res) => {
+  const taskTypes = await TaskType.find({}).select("name");
+  if (taskTypes) {
+    res.status(200).json({
+      status: 200,
+      data: taskTypes,
+      message: "Fetched task types successfully.",
+    });
+  } else {
+    res.status(400).json({ status: 400, message: "Something went wrorng." });
+  }
+});
+
 // delete tasktype
 const deleteTaskType = asyncHandler(async (req, res) => {
   const { taskId } = req.body.data;
@@ -72,6 +86,7 @@ const deleteTaskType = asyncHandler(async (req, res) => {
 });
 
 module.exports = {
+  getTaskTypes,
   createTaskType,
   deleteTaskType,
 };

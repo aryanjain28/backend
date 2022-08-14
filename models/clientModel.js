@@ -3,12 +3,12 @@ const Schema = mongoose.Schema;
 
 const clientSchema = new Schema(
   {
-    clientName: {
+    name: {
       type: String,
       required: true,
     },
-    entityName: {
-      type: String,
+    entity: {
+      type: [String],
       required: false,
     },
   },

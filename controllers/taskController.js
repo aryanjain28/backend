@@ -77,34 +77,59 @@ const getUsersTasks = asynHandler(async (req, res) => {
 
 // create tasks
 const createNewTask = asynHandler(async (req, res) => {
-  const { name, type, status, client, assignee, startDate } = req.body.data;
+  const {
+    name,
+    type,
+    assignee,
+    startDate,
+    client,
+    entity,
+    endDate,
+    totalAmount,
+    paidAmount,
+    balanceAmount,
+  } = req.body.data;
 
-  if (!name || !client || !type || !assignee || !status || !startDate) {
+  if (!name || !type || !assignee || !startDate) {
     res
       .status(400)
       .json({ status: 400, message: "Please fill the required fields." });
     throw new Error("Please fill the required fields.");
   }
 
-  //   Create new task
-  const task = await Task.create({
-    ...req.body.data,
-    client: mongoose.Types.ObjectId(client),
-    type: mongoose.Types.ObjectId(type),
-    assignee: mongoose.Types.ObjectId(assignee),
-    createdBy: req.user._id,
-    createdAt: new Date(),
-    assignedBy: req.user._id,
-    assignedAt: new Date(),
+  const newTaskObj = {
+    // required fields
+    name,
+    type,
+    assignee,
+    startDate,
+    // optional fields
     isNew: true,
-  });
+    status: "PENDING",
+    ...(client && { client: { id: client } }),
+    ...(client && entity && { client: { id: client, entity } }),
+    ...(endDate && { endDate }),
+    ...(totalAmount && { totalAmount }),
+    ...(paidAmount && { paidAmount }),
+    ...(balanceAmount && { balanceAmount }),
+    isApproved: false,
+    updatedOn: new Date(),
+    updatedBy: req.user._id,
+    createdAt: new Date(),
+    createdBy: req.user._id,
+    assignedAt: new Date(),
+    assignedBy: req.user._id,
+  };
+
+  //   Create new task
+  const task = await Task.create(newTaskObj);
   if (task) {
     res.status(201).json({
       status: 201,
       message: "Task Created Successfully",
       data: {
         _id: task.id,
-        ...req.body.data,
+        ...newTaskObj,
       },
     });
   } else {

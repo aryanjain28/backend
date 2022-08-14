@@ -107,6 +107,22 @@ const getUserDetails = asynHandler(async (req, res) => {
   }
 });
 
+const getAllUsers = asynHandler(async (req, res) => {
+  const user = await User.find({}).select(
+    "-password -createdAt -updatedAt -email"
+  );
+  if (user) {
+    res.status(200).json({
+      status: 200,
+      data: user,
+      message: "Fetched users info successfully.",
+    });
+  } else {
+    res.status(400).json({ status: 400, message: "Something went wrong" });
+    throw new Error("Something went wrong.");
+  }
+});
+
 // Generate JWT
 const generateToken = (id) => {
   return jwt.sign({ id }, process.env.JWT_SECRET, { expiresIn: "30d" });
@@ -116,4 +132,5 @@ module.exports = {
   loginUser,
   getUserDetails,
   registerUser,
+  getAllUsers,
 };
