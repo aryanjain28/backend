@@ -7,13 +7,16 @@ const clientSchema = new Schema(
       type: String,
       required: true,
     },
-    entity: {
+    entities: {
       type: [String],
       required: false,
     },
   },
-  { timestamps: true }
-);
+  { timestamps: true, versionKey: false }
+).set("toJSON", {
+  virtuals: true,
+  versionKey: false,
+});
 
 const Client = mongoose.model("Client", clientSchema);
 module.exports = { Client };

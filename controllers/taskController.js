@@ -10,9 +10,13 @@ const getTask = asynHandler(async (req, res) => {
   const task = await Task.find({
     _id: mongoose.Types.ObjectId(taskId),
   })
-    .populate("type", "-createdBy")
-    .populate("client")
-    .populate("assignee", "-password -notifications -tasks");
+    .populate("type", "-__v -createdAt -createdBy -updatedAt")
+    .populate({ path: "client", populate: { path: "client", model: "Client" } })
+    .populate(
+      "assignee",
+      "-password -notifications -tasks -createdAt -updatedAt"
+    );
+
   if (task) {
     res.status(200).json({
       status: 200,
@@ -30,9 +34,18 @@ const getTask = asynHandler(async (req, res) => {
 // get all tasks
 const getAllTasks = asynHandler(async (req, res) => {
   const tasks = await Task.find()
-    .populate("createdBy", "-__v -notifications -tasks -password")
-    .populate("assignee", "-__v -notifications -tasks -password")
-    .populate("client")
+    .populate(
+      "createdBy",
+      "-__v -notifications -tasks -password -createdAt -updatedAt -role"
+    )
+    .populate(
+      "assignee",
+      "-__v -notifications -tasks -password -createdAt -updatedAt"
+    )
+    .populate({
+      path: "client",
+      populate: { path: "client", model: "Client", entity: 0 },
+    })
     .populate("type", "-__v -createdAt -createdBy -updatedAt")
     .select("-__v");
 
@@ -57,9 +70,12 @@ const getUsersTasks = asynHandler(async (req, res) => {
   })
     .select("-assignee")
     .populate("assignedBy", { fName: 1, lName: 1, email: 1 })
-    .populate("type", { taskTypeName: 1 })
-    .populate("client", { clientName: 1, entity: 1 })
-    .populate("createdBy", { fName: 1, lName: 1, email: 1 });
+    .populate("type", "-__v -createdAt -createdBy -updatedAt")
+    .populate("createdBy", { fName: 1, lName: 1, email: 1 })
+    .populate({
+      path: "client",
+      populate: { path: "client", model: "Client" },
+    });
 
   if (tasks) {
     res.status(200).json({
@@ -106,8 +122,8 @@ const createNewTask = asynHandler(async (req, res) => {
     // optional fields
     isNew: true,
     status: "PENDING",
-    ...(client && { client: { id: client } }),
-    ...(client && entity && { client: { id: client, entity } }),
+    ...(client && { client: { client } }),
+    ...(client && entity && { client: { client, entity } }),
     ...(endDate && { endDate }),
     ...(totalAmount && { totalAmount }),
     ...(paidAmount && { paidAmount }),
@@ -152,6 +168,7 @@ const updateTask = asynHandler(async (req, res) => {
     balanceAmount,
     assigneeId,
     clientId,
+    entity,
   } = req.body.data;
 
   const isAdmin = req.user.role === "ADMIN";
@@ -166,7 +183,8 @@ const updateTask = asynHandler(async (req, res) => {
     ...(totalAmount && { totalAmount }),
     ...(paidAmount && { paidAmount }),
     ...(balanceAmount && { balanceAmount }),
-    ...(clientId && { client: clientId }),
+    ...(clientId && { client: { client: clientId } }),
+    ...(clientId && entity && { client: { client: clientId, entity } }),
   };
 
   const task = await Task.findOneAndUpdate(

@@ -12,8 +12,11 @@ const taskTypeSchema = new Schema(
       required: true,
     },
   },
-  { timestamps: true }
-);
+  { timestamps: true, versionKey: false }
+).set("toJSON", {
+  virtuals: true,
+  versionKey: false,
+});
 
 const taskSchema = new Schema(
   {
@@ -26,7 +29,7 @@ const taskSchema = new Schema(
     },
     status: { type: String, required: true },
     client: {
-      id: { type: Schema.Types.ObjectId, required: false, ref: "Client" },
+      client: { type: Schema.Types.ObjectId, required: false, ref: "Client" },
       entity: { type: Schema.Types.String, required: false },
     },
     assignee: { type: Schema.Types.ObjectId, required: true, ref: "User" },

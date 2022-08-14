@@ -4,16 +4,16 @@ const { TaskType } = require("../models/taskModel");
 
 // create task-type
 const createTaskType = asyncHandler(async (req, res) => {
-  const { taskTypeName } = req.body.data;
+  const { name } = req.body.data;
 
-  if (!taskTypeName) {
+  if (!name) {
     res
       .json(400)
       .status({ status: 400, message: "Task Name is a mandatory field." });
     throw new Error("Task Name is a mandatory field.");
   }
 
-  const alreadyExists = await TaskType.findOne({ taskTypeName });
+  const alreadyExists = await TaskType.findOne({ name });
   if (alreadyExists) {
     res.status(400).json({
       status: 400,
@@ -24,7 +24,7 @@ const createTaskType = asyncHandler(async (req, res) => {
   }
 
   const taskType = await TaskType.create({
-    taskTypeName,
+    name,
     createdBy: req.user._id,
   });
   if (taskType) {
