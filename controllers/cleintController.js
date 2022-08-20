@@ -15,6 +15,11 @@ const getAllClients = asyncHandler(async (req, res) => {
   }
 });
 
+//Create Client
+const createClient = asyncHandler(async (req, res) => {
+  
+})
+
 module.exports = {
   getAllClients,
 };
