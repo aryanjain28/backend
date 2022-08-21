@@ -146,8 +146,25 @@ const createClient = asyncHandler(async (req, res) => {
   }
 });
 
+// Delete Client
+const deleteClient = asyncHandler(async (req, res) => {
+  const { id: clientId } = req.params;
+  const client = await Client.findByIdAndDelete(clientId, { new: true });
+  if (client) {
+    res.status(201).json({
+      status: 201,
+      message: "Client Deleted Successfully",
+      data: client,
+    });
+  } else {
+    res.status(400).json({ status: 400, message: "Invalid Client ID." });
+    throw new Error("Invalid Client ID.");
+  }
+});
+
 module.exports = {
   getAllClients,
   getClientDetails,
   createClient,
+  deleteClient,
 };
