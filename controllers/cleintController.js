@@ -1,6 +1,6 @@
 const asyncHandler = require("express-async-handler");
 const { default: mongoose } = require("mongoose");
-const { Client } = require("../models/clientModel");
+const { Client, TaxPayerType } = require("../models/clientModel");
 
 // Get all clients
 const getAllClients = asyncHandler(async (req, res) => {
@@ -61,6 +61,21 @@ const getClientDetails = asyncHandler(async (req, res) => {
       status: 200,
       data: clientJson,
       message: "Client information fetched successfully.",
+    });
+  } else {
+    res.status(400).json({ status: 400, message: "Somthing went wrong." });
+  }
+});
+
+// Get all tax payer types
+const getTaxpayerTypes = asyncHandler(async (req, res) => {
+  const taxpayerTypes = await TaxPayerType.find({}).select("-createdBy");
+
+  if (taxpayerTypes) {
+    res.status(200).json({
+      status: 200,
+      data: taxpayerTypes,
+      message: "Taxpayer types fetched successfully.",
     });
   } else {
     res.status(400).json({ status: 400, message: "Somthing went wrong." });
@@ -232,6 +247,7 @@ const deleteClient = asyncHandler(async (req, res) => {
 module.exports = {
   getAllClients,
   getClientDetails,
+  getTaxpayerTypes,
   createClient,
   updateClient,
   deleteClient,
