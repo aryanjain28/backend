@@ -1,7 +1,8 @@
 const asyncHandler = require("express-async-handler");
+const { default: mongoose } = require("mongoose");
 const { Client } = require("../models/clientModel");
 
-// Get at clients
+// Get all clients
 const getAllClients = asyncHandler(async (req, res) => {
   const clients = await Client.find({})
     .select({
@@ -33,6 +34,36 @@ const getAllClients = asyncHandler(async (req, res) => {
     });
   } else {
     res.status(400).json({ status: 400, message: "Something went wrorng." });
+  }
+});
+
+// Get Single Client Details
+const getClientDetails = asyncHandler(async (req, res) => {
+  const { id: clientId } = req.params;
+  const client = await Client.findById(clientId)
+    .populate("taxpayerType")
+    .populate("pincodeRef");
+
+  if (client) {
+    let clientJson = client.toJSON();
+    clientJson = {
+      ...clientJson,
+      taxpayerTypeName: clientJson.taxpayerType.name,
+      taxpayerTypeId: clientJson.taxpayerType.id,
+      pincode: clientJson.pincodeRef.pincode,
+      district: clientJson.pincodeRef.district,
+      state: clientJson.pincodeRef.state,
+    };
+    delete clientJson.taxpayerType;
+    delete clientJson.pincodeRef;
+
+    res.status(200).json({
+      status: 200,
+      data: clientJson,
+      message: "Client information fetched successfully.",
+    });
+  } else {
+    res.status(400).json({ status: 400, message: "Somthing went wrong." });
   }
 });
 
@@ -117,5 +148,6 @@ const createClient = asyncHandler(async (req, res) => {
 
 module.exports = {
   getAllClients,
+  getClientDetails,
   createClient,
 };
