@@ -3,11 +3,32 @@ const { Client } = require("../models/clientModel");
 
 // Get at clients
 const getAllClients = asyncHandler(async (req, res) => {
-  const clients = await Client.find({});
+  const clients = await Client.find({})
+    .select({
+      name: 1,
+      gstIn: 1,
+      panNumber: 1,
+      primaryMobile: 1,
+      businessName: 1,
+      taxpayerType: 1,
+    })
+    .populate("taxpayerType", "-createdBy");
+
   if (clients) {
+    const modClients = clients.map((client) => {
+      let clientJsonFormat = client.toJSON();
+      clientJsonFormat = {
+        ...clientJsonFormat,
+        taxpayerTypeName: client.taxpayerType.name,
+        taxpayerTypeId: client.taxpayerType.id,
+      };
+      delete clientJsonFormat.taxpayerType;
+      return clientJsonFormat;
+    });
+
     res.status(200).json({
       status: 200,
-      data: clients,
+      data: modClients,
       message: "Fetched clients info successfully.",
     });
   } else {
@@ -86,7 +107,7 @@ const createClient = asyncHandler(async (req, res) => {
     res.status(201).json({
       status: 201,
       message: "Client Added Successfully",
-      data: { id: client._id, ...newClientObj },
+      data: client,
     });
   } else {
     res.status(400).json({ status: 400, message: "Invalid Client Details." });

@@ -71,6 +71,7 @@ const clientSchema = new Schema(
       type: String,
       required: false,
       default: null,
+      length: 15,
     },
     businessName: {
       type: String,
