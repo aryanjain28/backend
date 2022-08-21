@@ -99,6 +99,7 @@ const createNewTask = asynHandler(async (req, res) => {
   const {
     name,
     type,
+    comments,
     assignee,
     startDate,
     client,
@@ -131,6 +132,7 @@ const createNewTask = asynHandler(async (req, res) => {
     ...(totalAmount && { totalAmount }),
     ...(paidAmount && { paidAmount }),
     ...(balanceAmount && { balanceAmount }),
+    ...(comments && { comments }),
     isApproved: false,
     updatedOn: new Date(),
     updatedBy: req.user._id,
@@ -162,6 +164,7 @@ const updateTask = asynHandler(async (req, res) => {
   const { taskId } = req.params;
   const {
     name,
+    comments,
     taskTypeId,
     status,
     startDate,
@@ -183,6 +186,7 @@ const updateTask = asynHandler(async (req, res) => {
     ...(isAdmin && endDate && { endDate }),
     ...(isAdmin && assigneeId && { assignee: assigneeId }),
     ...(status && { status }),
+    ...(comments && { comments }),
     ...(totalAmount && { totalAmount }),
     ...(paidAmount && { paidAmount }),
     ...(balanceAmount && { balanceAmount }),

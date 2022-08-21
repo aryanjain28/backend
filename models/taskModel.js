@@ -47,6 +47,7 @@ const taskSchema = new Schema(
       ref: "TaskType",
     },
     status: { type: String, required: true },
+    comments: { type: String, required: false },
     client: {
       client: { type: Schema.Types.ObjectId, required: false, ref: "Client" },
       entity: { type: Schema.Types.String, required: false },
@@ -58,7 +59,7 @@ const taskSchema = new Schema(
     endDate: { type: Schema.Types.Date, required: false },
     // totalAmount: { type: String, required: false },
     paidAmount: { type: String, required: false },
-    amount : { type: Number, required: true},
+    amount: { type: Number, required: true },
     // balanceAmount: { type: String, required: false },
     isApproved: { type: Boolean, required: false },
     updatedOn: { type: Schema.Types.Date, required: false },
@@ -68,10 +69,10 @@ const taskSchema = new Schema(
     createdBy: { type: Schema.Types.ObjectId, required: true, ref: "User" },
     createdAt: { type: Schema.Types.Date, required: true },
     taskParent: {
-      type : Schema.Types.ObjectId,
+      type: Schema.Types.ObjectId,
       required: false,
-      ref: "TaskParent"
-    }
+      ref: "TaskParent",
+    },
   },
   { timestamps: true, versionKey: false }
 ).set("toJSON", {
