@@ -1,6 +1,10 @@
 const asyncHandler = require("express-async-handler");
 const { default: mongoose } = require("mongoose");
-const { Client, TaxPayerType } = require("../models/clientModel");
+const {
+  Client,
+  TaxPayerType,
+  DistrictDetails,
+} = require("../models/clientModel");
 
 // Get all clients
 const getAllClients = asyncHandler(async (req, res) => {
@@ -76,6 +80,23 @@ const getTaxpayerTypes = asyncHandler(async (req, res) => {
       status: 200,
       data: taxpayerTypes,
       message: "Taxpayer types fetched successfully.",
+    });
+  } else {
+    res.status(400).json({ status: 400, message: "Somthing went wrong." });
+  }
+});
+
+// Get all PINCODES
+const getPincodes = asyncHandler(async (req, res) => {
+  const pincodes = await DistrictDetails.find({});
+  console.log(pincodes);
+  if (pincodes) {
+    res.status(200).json({
+      status: 200,
+      data: Object.fromEntries(
+        pincodes.map((p) => [p.toJSON()._id, { ...p.toJSON() }])
+      ),
+      message: "Pincodes fetched successfully.",
     });
   } else {
     res.status(400).json({ status: 400, message: "Somthing went wrong." });
@@ -248,6 +269,7 @@ module.exports = {
   getAllClients,
   getClientDetails,
   getTaxpayerTypes,
+  getPincodes,
   createClient,
   updateClient,
   deleteClient,
