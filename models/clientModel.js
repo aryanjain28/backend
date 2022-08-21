@@ -24,10 +24,10 @@ const pincodeSchema = new Schema(
       type: String,
       required: true,
     },
-    pinCode: {
+    pincode: {
       type: Number,
       required: true,
-      length: 6
+      length: 6,
     },
     district: {
       type: String,
@@ -35,7 +35,7 @@ const pincodeSchema = new Schema(
     },
     state: {
       type: String,
-      required: true
+      required: true,
     },
   },
   { timestamps: true, versionKey: false }
@@ -67,34 +67,47 @@ const clientSchema = new Schema(
       type: String,
       required: true,
     },
-    gstin: {
-      type: [String],
-      required: true,
+    gstIn: {
+      type: String,
+      required: false,
+      default: null,
     },
-    dateOfRegistration: {
+    businessName: {
+      type: String,
+      required: true,
+      default: null,
+    },
+    entities: {
+      type: [String],
+      required: false,
+      default: [],
+    },
+    registrationDate: {
       type: Date,
-      required: true
+      required: false,
+      default: null,
     },
     legalName: {
       type: String,
-      required: true
+      required: true,
     },
     panNumber: {
       type: String,
-      required: true
+      required: false,
+      default: null,
     },
-    address: {
-      type: String,
-      required: true
-    },
-    taxPayertype: {
+    taxpayerType: {
       type: Schema.Types.ObjectId,
       required: true,
       ref: "TaxPayerType",
     },
+    address: {
+      type: String,
+      required: true,
+    },
     city: {
       type: String,
-      required: true
+      required: true,
     },
     pincodeRef: {
       type: Schema.Types.ObjectId,
@@ -103,35 +116,39 @@ const clientSchema = new Schema(
     },
     primaryMobile: {
       type: String,
-      required: true
+      required: true,
     },
     primaryEmail: {
       type: String,
-      required: true,
+      required: false,
+      default: null,
     },
     secondaryMobile: {
       type: String,
       required: false,
+      default: null,
     },
-    secondaryEmail : {
+    gstUsername: {
       type: String,
       required: false,
-    },
-    gstusername: {
-      type: String,
-      required: false,
+      default: null,
     },
     gstPassword: {
       type: String,
       required: false,
+      default: null,
     },
-    constOfBusiness: {
+    businessConstitution: {
       type: Schema.Types.ObjectId,
-      required: true,
+      required: false,
+      default: null,
       ref: "ConstitutionOfBusiness",
     },
-
-
+    createdBy: {
+      type: Schema.Types.ObjectId,
+      required: true,
+      ref: "User",
+    },
   },
   { timestamps: true, versionKey: false }
 ).set("toJSON", {
@@ -142,5 +159,13 @@ const clientSchema = new Schema(
 const Client = mongoose.model("Client", clientSchema);
 const TaxPayerType = mongoose.model("TaxPayerType", taxpayerTypeSchema);
 const DistrictDetails = mongoose.model("DistrictDetails", pincodeSchema);
-const ConstitutionOfBusiness = mongoose.model("ConstitutionOfBusiness", constitutionOfBusinessSchema);
-module.exports = { Client, TaxPayerType, DistrictDetails, ConstitutionOfBusiness};
+const ConstitutionOfBusiness = mongoose.model(
+  "ConstitutionOfBusiness",
+  constitutionOfBusinessSchema
+);
+module.exports = {
+  Client,
+  TaxPayerType,
+  DistrictDetails,
+  ConstitutionOfBusiness,
+};
