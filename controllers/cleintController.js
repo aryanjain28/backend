@@ -146,6 +146,73 @@ const createClient = asyncHandler(async (req, res) => {
   }
 });
 
+// Update Client
+const updateClient = asyncHandler(async (req, res) => {
+  const { id: clientId } = req.params;
+  const {
+    gstIn,
+    businessName,
+    entities,
+    registrationDate,
+    legalName,
+    panNumber,
+    taxpayerType,
+    address,
+    city,
+    pincode,
+    primaryMobile,
+    primaryEmail,
+    secondaryMobile,
+    gstUsername,
+    gstPassword,
+    businessConstitution,
+    businessActivity,
+  } = req.body.data;
+
+  const clientUpdateObj = {
+    ...(gstIn && { gstIn }),
+    ...(businessName && { businessName }),
+    ...(entities && { entities }),
+    ...(registrationDate && { registrationDate }),
+    ...(legalName && { legalName }),
+    ...(panNumber && { panNumber }),
+    ...(taxpayerType && { taxpayerType }),
+    ...(address && { address }),
+    ...(city && { city }),
+    ...(pincode && { pincodeRef: pincode }),
+    ...(primaryMobile && { primaryMobile }),
+    ...(secondaryMobile && { secondaryMobile }),
+    ...(gstUsername && { gstUsername }),
+    ...(gstPassword && { gstPassword }),
+    ...(businessConstitution && { businessConstitution }),
+    ...(businessActivity && { businessActivity }),
+    ...(primaryEmail && { primaryEmail }),
+    updatedAt: new Date(),
+    updatedBy: req.user._id,
+  };
+
+  const client = await Client.findByIdAndUpdate(clientId, clientUpdateObj, {
+    new: true,
+  });
+
+  if (client) {
+    let clientJson = client.toJSON();
+    clientJson = {
+      ...clientJson,
+      pincode: clientJson.pincodeRef,
+    };
+    delete clientJson.pincodeRef;
+    res.status(201).json({
+      status: 201,
+      message: "Client Updated Successfully",
+      data: clientJson,
+    });
+  } else {
+    res.status(400).json({ status: 400, message: "Invalid Client." });
+    throw new Error("Invalid Client.");
+  }
+});
+
 // Delete Client
 const deleteClient = asyncHandler(async (req, res) => {
   const { id: clientId } = req.params;
@@ -166,5 +233,6 @@ module.exports = {
   getAllClients,
   getClientDetails,
   createClient,
+  updateClient,
   deleteClient,
 };
