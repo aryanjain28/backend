@@ -16,18 +16,25 @@ const getAllClients = asyncHandler(async (req, res) => {
       primaryMobile: 1,
       businessName: 1,
       taxpayerType: 1,
+      taskChildren: 1,
     })
     .populate("taxpayerType", "-createdBy");
 
   if (clients) {
     const modClients = clients.map((client) => {
       let clientJsonFormat = client.toJSON();
+      const taskParentIds = (clientJsonFormat.taskChildren || []).map(
+        (_) => _.parentId
+      );
+
       clientJsonFormat = {
         ...clientJsonFormat,
         taxpayerTypeName: client.taxpayerType.name,
         taxpayerTypeId: client.taxpayerType.id,
+        taskParentIds,
       };
       delete clientJsonFormat.taxpayerType;
+      delete clientJsonFormat.taskChildren;
       return clientJsonFormat;
     });
 
@@ -46,7 +53,8 @@ const getClientDetails = asyncHandler(async (req, res) => {
   const { id: clientId } = req.params;
   const client = await Client.findById(clientId)
     .populate("taxpayerType")
-    .populate("pincodeRef");
+    .populate("pincodeRef")
+    .select("-taskParents -taskChildren");
 
   if (client) {
     let clientJson = client.toJSON();
@@ -65,6 +73,38 @@ const getClientDetails = asyncHandler(async (req, res) => {
       status: 200,
       data: clientJson,
       message: "Client information fetched successfully.",
+    });
+  } else {
+    res.status(400).json({ status: 400, message: "Somthing went wrong." });
+  }
+});
+
+// Get Client Job Details
+const getClientJobDetails = asyncHandler(async (req, res) => {
+  const { id: clientId } = req.params;
+  const client = await Client.findById(clientId, { taskChildren: 1 }).populate(
+    "taskChildren.childId",
+    "-parentId -createdBy -createdAt -updatedAt"
+  );
+  if (client) {
+    let clientJson = client.toJSON();
+    clientJson = {
+      ...clientJson,
+      taskChildren: clientJson.taskChildren.map((p) => {
+        const updatedObj = {
+          ...p,
+          childName: p.childId.childName,
+          childIdTemp: p.childId._id,
+        };
+        updatedObj.childId = updatedObj.childIdTemp;
+        delete updatedObj.childIdTemp;
+        return updatedObj;
+      }),
+    };
+    res.status(200).json({
+      status: 200,
+      data: clientJson,
+      message: "Client jobs details fetched successfully.",
     });
   } else {
     res.status(400).json({ status: 400, message: "Somthing went wrong." });
@@ -269,6 +309,7 @@ module.exports = {
   getAllClients,
   getClientDetails,
   getTaxpayerTypes,
+  getClientJobDetails,
   getPincodes,
   createClient,
   updateClient,

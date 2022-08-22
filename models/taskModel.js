@@ -3,7 +3,11 @@ const Schema = mongoose.Schema;
 
 const taskTypeSchema = new Schema(
   {
-    name: {
+    parentId: {
+      type: Number,
+      required: true,
+    },
+    childName: {
       type: String,
       required: true,
     },
@@ -11,28 +15,9 @@ const taskTypeSchema = new Schema(
       type: Schema.Types.ObjectId,
       required: true,
     },
-    tasParentType: {
-      type: Schema.Types.ObjectId,
-      required: true,
-      ref: "taskParentSchema",
-    },
   },
   { timestamps: true, versionKey: false }
 ).set("toJSON", {
-  virtuals: true,
-  versionKey: false,
-});
-
-const taskParentSchema = new Schema({
-  name: {
-    type: String,
-    required: true,
-  },
-  createdBy: {
-    type: Schema.Types.ObjectId,
-    required: true,
-  },
-}).set("toJSON", {
   virtuals: true,
   versionKey: false,
 });
@@ -82,5 +67,4 @@ const taskSchema = new Schema(
 
 const Task = mongoose.model("Task", taskSchema);
 const TaskType = mongoose.model("TaskType", taskTypeSchema);
-const TaskParent = mongoose.model("TaskParent", taskParentSchema);
 module.exports = { Task, TaskType };
