@@ -23,9 +23,11 @@ const getAllClients = asyncHandler(async (req, res) => {
   if (clients) {
     const modClients = clients.map((client) => {
       let clientJsonFormat = client.toJSON();
-      const taskParentIds = (clientJsonFormat.taskChildren || []).map(
-        (_) => _.parentId
-      );
+      const taskParentIds = [
+        ...new Set(
+          (clientJsonFormat.taskChildren || []).map((_) => _.parentId)
+        ),
+      ];
 
       clientJsonFormat = {
         ...clientJsonFormat,
