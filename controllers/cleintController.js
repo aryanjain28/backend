@@ -41,7 +41,7 @@ const getAllClients = asyncHandler(async (req, res) => {
 
     res.status(200).json({
       status: 200,
-      data: clients,
+      data: modClients,
       message: "Fetched clients info successfully.",
     });
   } else {
