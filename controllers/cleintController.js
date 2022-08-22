@@ -16,17 +16,16 @@ const getAllClients = asyncHandler(async (req, res) => {
       primaryMobile: 1,
       businessName: 1,
       taxpayerType: 1,
-      taskChildren: 1,
+      taskTypes: 1,
     })
-    .populate("taxpayerType", "-createdBy");
+    .populate("taxpayerType", "-createdBy")
+    .populate("taskTypes");
 
   if (clients) {
     const modClients = clients.map((client) => {
       let clientJsonFormat = client.toJSON();
       const taskParentIds = [
-        ...new Set(
-          (clientJsonFormat.taskChildren || []).map((_) => _.parentId)
-        ),
+        ...new Set((clientJsonFormat.taskTypes || []).map((_) => _.parentId)),
       ];
 
       clientJsonFormat = {
@@ -36,13 +35,13 @@ const getAllClients = asyncHandler(async (req, res) => {
         taskParentIds,
       };
       delete clientJsonFormat.taxpayerType;
-      delete clientJsonFormat.taskChildren;
+      delete clientJsonFormat.taskTypes;
       return clientJsonFormat;
     });
 
     res.status(200).json({
       status: 200,
-      data: modClients,
+      data: clients,
       message: "Fetched clients info successfully.",
     });
   } else {
@@ -56,7 +55,7 @@ const getClientDetails = asyncHandler(async (req, res) => {
   const client = await Client.findById(clientId)
     .populate("taxpayerType")
     .populate("pincodeRef")
-    .select("-taskParents -taskChildren");
+    .select("-taskParents -taskTypes");
 
   if (client) {
     let clientJson = client.toJSON();
@@ -84,28 +83,13 @@ const getClientDetails = asyncHandler(async (req, res) => {
 // Get Client Job Details
 const getClientJobDetails = asyncHandler(async (req, res) => {
   const { id: clientId } = req.params;
-  const client = await Client.findById(clientId, { taskChildren: 1 }).populate(
-    "taskChildren.childId",
-    "-parentId -createdBy -createdAt -updatedAt"
+  const client = await Client.findById(clientId, { taskTypes: 1 }).populate(
+    "taskTypes"
   );
   if (client) {
-    let clientJson = client.toJSON();
-    clientJson = {
-      ...clientJson,
-      taskChildren: clientJson.taskChildren.map((p) => {
-        const updatedObj = {
-          ...p,
-          childName: p.childId.childName,
-          childIdTemp: p.childId._id,
-        };
-        updatedObj.childId = updatedObj.childIdTemp;
-        delete updatedObj.childIdTemp;
-        return updatedObj;
-      }),
-    };
     res.status(200).json({
       status: 200,
-      data: clientJson,
+      data: client,
       message: "Client jobs details fetched successfully.",
     });
   } else {

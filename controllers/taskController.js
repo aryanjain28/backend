@@ -94,6 +94,40 @@ const getUsersTasks = asynHandler(async (req, res) => {
   }
 });
 
+// get clients completed task details
+const getClientsTasksDetails = asynHandler(async (req, res) => {
+  const { id: clientId } = req.params;
+  const clientTasks = await Task.find(
+    {
+      "client.id": mongoose.Types.ObjectId(clientId),
+    },
+    { type: 1, startDate: 1, approvedAt: 1, totalAmount: 1, paidAmount: 1 }
+  ).populate("type", { parentId: 1, childName: 1 });
+
+  if (clientTasks) {
+    const modClientTasks = clientTasks.map((clientTask) => {
+      let clientJson = clientTask.toJSON();
+      clientJson = {
+        ...clientJson,
+        taskTypeChildName: clientJson.type.childName,
+        taskTypeParentId: clientJson.type.parentId,
+      };
+      delete clientJson.type;
+      return clientJson;
+    });
+    res.status(200).json({
+      message: "Fetched clients' tasks successfully.",
+      data: modClientTasks,
+      status: 200,
+    });
+  } else {
+    res.status(400).json({
+      message: "Failed to fetch clients tasks.",
+      status: 400,
+    });
+  }
+});
+
 // create tasks
 const createNewTask = asynHandler(async (req, res) => {
   const {
@@ -126,8 +160,8 @@ const createNewTask = asynHandler(async (req, res) => {
     // optional fields
     isNew: true,
     status: "PENDING",
-    ...(client && { client: { client } }),
-    ...(client && entity && { client: { client, entity } }),
+    ...(client && { client: { id: client } }),
+    ...(client && entity && { client: { id: client, entity } }),
     ...(endDate && { endDate }),
     ...(totalAmount && { totalAmount }),
     ...(paidAmount && { paidAmount }),
@@ -262,6 +296,7 @@ const getDashboardDetails = asynHandler(async (req, res) => {
 module.exports = {
   getAllTasks,
   getTask,
+  getClientsTasksDetails,
   createNewTask,
   updateTask,
   deleteTask,
