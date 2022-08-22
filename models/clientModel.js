@@ -149,19 +149,13 @@ const clientSchema = new Schema(
       required: true,
       ref: "User",
     },
-    taskChildren: {
-      type: [
-        {
-          date: Date,
-          totalAmount: Number,
-          paidAmount: Number,
-          parentId: { type: Schema.Types.Number, required: true },
-          childId: { type: Schema.Types.ObjectId, ref: "TaskType" },
-        },
-      ],
-      required: false,
-      default: [],
-    },
+    taskTypes: [
+      {
+        type: Schema.Types.ObjectId,
+        ref: "TaskType",
+        default: [],
+      },
+    ],
   },
   { timestamps: true, versionKey: false }
 ).set("toJSON", {
