@@ -1,8 +1,7 @@
 const mongoose = require("mongoose");
 const asynHandler = require("express-async-handler");
-const { Task, TaskType } = require("../models/taskModel");
+const { Task } = require("../models/taskModel");
 const { Client } = require("../models/clientModel");
-const User = require("../models/userModel");
 
 // get single task details
 const getTask = asynHandler(async (req, res) => {
@@ -33,27 +32,70 @@ const getTask = asynHandler(async (req, res) => {
 
 // get all tasks
 const getAllTasks = asynHandler(async (req, res) => {
-  const tasks = await Task.find()
+  const tasks = await Task.find(
+    {},
+    {
+      name: 1,
+      type: 1,
+      status: 1,
+      client: 1,
+      clientEntity: 1,
+      comments: 1,
+      assignee: 1,
+      assignedAt: 1,
+      assignedBy: 1,
+      startDate: 1,
+      endDate: 1,
+      paidAmount: 1,
+      totalAmount: 1,
+      updatedAt: 1,
+    }
+  )
     .populate(
-      "createdBy",
+      "assignedBy",
       "-__v -notifications -tasks -password -createdAt -updatedAt -role"
     )
     .populate(
       "assignee",
       "-__v -notifications -tasks -password -createdAt -updatedAt"
     )
-    .populate({
-      path: "client",
-      populate: { path: "client", model: "Client", entity: 0 },
-    })
+    .populate("client", "id name")
     .populate("type", "-__v -createdAt -createdBy -updatedAt")
     .select("-__v");
 
   if (tasks) {
+    const modTasks = tasks?.map((task) => ({
+      id: task.id,
+      name: task.name,
+      startDate: task.startDate,
+      status: task.status,
+      totalAmount: task.totalAmount,
+      paidAmount: task.paidAmount,
+      balanceAmount: task.totalAmount - task.paidAmount,
+      updatedAt: task.updatedAt,
+      createdAt: task.createdAt,
+      createdByName: task.assignedBy?.fName + task.assignedBy?.lName,
+      createdByEmail: task.assignedBy?.email,
+      ...(task?.comments && { comments: task.comments }),
+      ...(task?.endDate && { endDate: task.endDate }),
+      ...(task?.assignee?.id && { assigneeId: task.assignee.id }),
+      ...(task?.assignee?.fName && { assigneeFName: task.assignee.fName }),
+      ...(task?.assignee?.lName && { assigneeLName: task.assignee.lName }),
+      ...(task?.client?.id && { clientId: task.client.id }),
+      ...(task?.client?.name && { clientName: task.client.name }),
+      ...(task?.clientEntity && { clientEntity: task.clientEntity }),
+      ...(task?.type?.id && { taskTypeId: task.type.id }),
+      ...(task?.type?.childName && { taskTypeName: task.type.childName }),
+      ...(task?.type?.parentId && { taskTypeParentId: task.type.parentId }),
+      assignedAt: task.assignedAt,
+      assignedByFName: task.assignedBy?.fName || "",
+      assignedByLName: task.assignedBy?.lName || "",
+    }));
+
     res.status(200).json({
       status: 200,
       message: "All tasks.",
-      data: tasks,
+      data: modTasks,
     });
   } else {
     res.status(400).json({
@@ -98,9 +140,7 @@ const getUsersTasks = asynHandler(async (req, res) => {
 const getClientsTasksDetails = asynHandler(async (req, res) => {
   const { id: clientId } = req.params;
   const clientTasks = await Task.find(
-    {
-      "client.id": mongoose.Types.ObjectId(clientId),
-    },
+    { client: mongoose.Types.ObjectId(clientId) },
     { type: 1, startDate: 1, approvedAt: 1, totalAmount: 1, paidAmount: 1 }
   ).populate("type", { parentId: 1, childName: 1 });
 
@@ -160,8 +200,8 @@ const createNewTask = asynHandler(async (req, res) => {
     // optional fields
     isNew: true,
     status: "PENDING",
-    ...(client && { client: { id: client } }),
-    ...(client && entity && { client: { id: client, entity } }),
+    ...(client && { client }),
+    ...(entity && { clientEntity: entity }),
     ...(endDate && { endDate }),
     ...(totalAmount && { totalAmount }),
     ...(paidAmount && { paidAmount }),
@@ -178,6 +218,12 @@ const createNewTask = asynHandler(async (req, res) => {
 
   //   Create new task
   const task = await Task.create(newTaskObj);
+  // Update client's task types
+  const clientUpdate = await Client.findOneAndUpdate(
+    { _id: mongoose.Types.ObjectId(client) },
+    { $push: { taskTypes: mongoose.Types.ObjectId(type) } }
+  );
+
   if (task) {
     res.status(201).json({
       status: 201,
@@ -205,7 +251,6 @@ const updateTask = asynHandler(async (req, res) => {
     endDate,
     totalAmount,
     paidAmount,
-    balanceAmount,
     assigneeId,
     clientId,
     clientEntity,
@@ -223,17 +268,15 @@ const updateTask = asynHandler(async (req, res) => {
     ...(comments && { comments }),
     ...(totalAmount && { totalAmount }),
     ...(paidAmount && { paidAmount }),
-    ...(balanceAmount && { balanceAmount }),
-    ...(clientId && { client: { client: clientId } }),
-    ...(clientId &&
-      clientEntity && { client: { client: clientId, entity: clientEntity } }),
+    ...(clientId && { client: clientId }),
+    ...(clientId && clientEntity && { clientEntity }),
   };
 
   const task = await Task.findOneAndUpdate(
     {
       _id: mongoose.Types.ObjectId(taskId),
     },
-    { ...updateBody, updatedBy: req.user._id, updatedAt: new Date() },
+    { ...updateBody, updatedBy: req.user._id, updatedOn: new Date() },
     { new: true }
   );
 

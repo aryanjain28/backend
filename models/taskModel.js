@@ -33,10 +33,8 @@ const taskSchema = new Schema(
     },
     status: { type: String, required: true },
     comments: { type: String, required: false },
-    client: {
-      id: { type: Schema.Types.ObjectId, required: false, ref: "Client" },
-      entity: { type: Schema.Types.String, required: false },
-    },
+    client: { type: Schema.Types.ObjectId, required: false, ref: "Client" },
+    clientEntity: { type: Schema.Types.String, required: false, default: "" },
     assignee: { type: Schema.Types.ObjectId, required: true, ref: "User" },
     assignedAt: Schema.Types.Date,
     assignedBy: { type: Schema.Types.ObjectId, ref: "User" },

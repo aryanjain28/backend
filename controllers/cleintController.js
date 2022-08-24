@@ -17,6 +17,7 @@ const getAllClients = asyncHandler(async (req, res) => {
       businessName: 1,
       taxpayerType: 1,
       taskTypes: 1,
+      entities: 1,
     })
     .populate("taxpayerType", "-createdBy")
     .populate("taskTypes");
@@ -115,7 +116,6 @@ const getTaxpayerTypes = asyncHandler(async (req, res) => {
 // Get all PINCODES
 const getPincodes = asyncHandler(async (req, res) => {
   const pincodes = await DistrictDetails.find({});
-  console.log(pincodes);
   if (pincodes) {
     res.status(200).json({
       status: 200,

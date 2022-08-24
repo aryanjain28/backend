@@ -12,7 +12,7 @@ const createTaskType = asyncHandler(async (req, res) => {
     throw new Error("Task Name is a mandatory field.");
   }
 
-  const alreadyExists = await TaskType.findOne({ childName });
+  const alreadyExists = await TaskType.findOne({ parentId, childName });
   if (alreadyExists) {
     res.status(400).json({
       status: 400,
@@ -41,9 +41,9 @@ const createTaskType = asyncHandler(async (req, res) => {
 
 // get taskTypes
 const getTaskTypes = asyncHandler(async (req, res) => {
-  const taskTypes = await TaskType.find({}).select(
-    "-createdAt -createdBy -updatedAt -__v"
-  );
+  const taskTypes = await TaskType.find({})
+    .sort("parentId")
+    .select("-createdAt -createdBy -updatedAt -__v");
   if (taskTypes) {
     res.status(200).json({
       status: 200,
