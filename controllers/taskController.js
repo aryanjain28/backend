@@ -117,10 +117,7 @@ const getUsersTasks = asynHandler(async (req, res) => {
     .populate("assignedBy", { fName: 1, lName: 1, email: 1 })
     .populate("type", "-__v -createdAt -createdBy -updatedAt")
     .populate("createdBy", { fName: 1, lName: 1, email: 1 })
-    .populate({
-      path: "client",
-      populate: { path: "client", model: "Client" },
-    });
+    .populate({ path: "client" });
 
   if (tasks) {
     res.status(200).json({
