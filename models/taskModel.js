@@ -3,7 +3,11 @@ const Schema = mongoose.Schema;
 
 const taskTypeSchema = new Schema(
   {
-    name: {
+    parentId: {
+      type: Number,
+      required: true,
+    },
+    childName: {
       type: String,
       required: true,
     },
@@ -28,23 +32,21 @@ const taskSchema = new Schema(
       ref: "TaskType",
     },
     status: { type: String, required: true },
-    client: {
-      client: { type: Schema.Types.ObjectId, required: false, ref: "Client" },
-      entity: { type: Schema.Types.String, required: false },
-    },
+    comments: { type: String, required: false },
+    client: { type: Schema.Types.ObjectId, required: false, ref: "Client" },
+    clientEntity: { type: Schema.Types.String, required: false, default: "" },
     assignee: { type: Schema.Types.ObjectId, required: true, ref: "User" },
     assignedAt: Schema.Types.Date,
     assignedBy: { type: Schema.Types.ObjectId, ref: "User" },
     startDate: { type: Schema.Types.Date, required: true },
     endDate: { type: Schema.Types.Date, required: false },
-    totalAmount: { type: String, required: false },
-    paidAmount: { type: String, required: false },
-    balanceAmount: { type: String, required: false },
+    paidAmount: { type: Number, required: false, default: 0 },
+    totalAmount: { type: Number, required: true },
     isApproved: { type: Boolean, required: false },
     updatedOn: { type: Schema.Types.Date, required: false },
     updatedBy: { type: Schema.Types.ObjectId, required: false, ref: "User" },
     approvedBy: { type: Schema.Types.ObjectId, required: false, ref: "User" },
-    approvedAt: { type: Schema.Types.Date, required: false },
+    approvedAt: { type: Schema.Types.Date, required: false, default: null },
     createdBy: { type: Schema.Types.ObjectId, required: true, ref: "User" },
     createdAt: { type: Schema.Types.Date, required: true },
   },

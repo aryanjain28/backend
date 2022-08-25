@@ -4,16 +4,15 @@ const { TaskType } = require("../models/taskModel");
 
 // create task-type
 const createTaskType = asyncHandler(async (req, res) => {
-  const { name } = req.body.data;
-
-  if (!name) {
+  const { childName, parentId } = req.body.data;
+  if (!childName || !parentId) {
     res
       .json(400)
       .status({ status: 400, message: "Task Name is a mandatory field." });
     throw new Error("Task Name is a mandatory field.");
   }
 
-  const alreadyExists = await TaskType.findOne({ name });
+  const alreadyExists = await TaskType.findOne({ parentId, childName });
   if (alreadyExists) {
     res.status(400).json({
       status: 400,
@@ -24,7 +23,8 @@ const createTaskType = asyncHandler(async (req, res) => {
   }
 
   const taskType = await TaskType.create({
-    name,
+    parentId,
+    childName,
     createdBy: req.user._id,
   });
   if (taskType) {
@@ -41,11 +41,13 @@ const createTaskType = asyncHandler(async (req, res) => {
 
 // get taskTypes
 const getTaskTypes = asyncHandler(async (req, res) => {
-  const taskTypes = await TaskType.find({}).select("name");
+  const taskTypes = await TaskType.find({})
+    .sort("parentId")
+    .select("-createdAt -createdBy -updatedAt -__v");
   if (taskTypes) {
     res.status(200).json({
       status: 200,
-      data: taskTypes,
+      data: taskTypes.map((p) => p.toJSON()),
       message: "Fetched task types successfully.",
     });
   } else {
