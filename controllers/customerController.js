@@ -4,9 +4,7 @@ const Customer = require("../models/customerModel");
 const getCustomers = (req, res) => {
   Customer.find()
     .then((customers) => {
-      console.log("C: ", customers);
       const data = customers.map((c) => ({ ...c._doc, id: c._id }));
-      console.log("DATA: ", data);
       res.status(200).json({ success: true, data });
     })
     .catch((error) => res.status().json({ success: false }));

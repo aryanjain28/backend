@@ -5,6 +5,10 @@ require("dotenv").config();
 //routers
 const customerRouter = require("./routers/customerRouter");
 const userRouter = require("./routers/userRouter");
+const taskRouter = require("./routers/taskRouter");
+const taskTypeRouter = require("./routers/taskTypeRouter");
+const clientsRouter = require("./routers/clientRouter");
+const utilitiesRouter = require("./routers/utilityRouter");
 
 // express app
 const app = express();
@@ -38,3 +42,7 @@ app.use(express.json());
 
 app.use("/customers", customerRouter);
 app.use("/users", userRouter);
+app.use("/tasks", taskRouter);
+app.use("/taskTypes", taskTypeRouter);
+app.use("/clients", clientsRouter);
+app.use("/utilities", utilitiesRouter);
