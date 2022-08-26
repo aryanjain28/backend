@@ -107,22 +107,70 @@ const getAllTasks = asynHandler(async (req, res) => {
 
 // get my tasks
 const getUsersTasks = asynHandler(async (req, res) => {
-  const tasks = await Task.find({
-    assignee: mongoose.Types.ObjectId(req.user._id),
-  })
+  const tasks = await Task.find(
+    {
+      assignee: mongoose.Types.ObjectId(req.user._id),
+    },
+    {
+      name: 1,
+      type: 1,
+      status: 1,
+      client: 1,
+      clientEntity: 1,
+      comments: 1,
+      assignee: 1,
+      assignedAt: 1,
+      assignedBy: 1,
+      startDate: 1,
+      endDate: 1,
+      paidAmount: 1,
+      totalAmount: 1,
+      updatedAt: 1,
+    }
+  )
+    .populate(
+      "assignedBy",
+      "-__v -notifications -tasks -password -createdAt -updatedAt -role"
+    )
     .populate(
       "assignee",
       "-__v -notifications -tasks -password -createdAt -updatedAt"
     )
-    .populate("assignedBy", { fName: 1, lName: 1, email: 1 })
     .populate("type", "-__v -createdAt -createdBy -updatedAt")
-    .populate("createdBy", { fName: 1, lName: 1, email: 1 })
-    .populate({ path: "client" });
+    .populate("client", "id name");
 
   if (tasks) {
+    const modTasks = tasks?.map((task) => ({
+      id: task.id,
+      name: task.name,
+      startDate: task.startDate,
+      status: task.status,
+      totalAmount: task.totalAmount,
+      paidAmount: task.paidAmount,
+      balanceAmount: task.totalAmount - task.paidAmount,
+      updatedAt: task.updatedAt,
+      createdAt: task.createdAt,
+      createdByName: task.assignedBy?.fName + task.assignedBy?.lName,
+      createdByEmail: task.assignedBy?.email,
+      ...(task?.comments && { comments: task.comments }),
+      ...(task?.endDate && { endDate: task.endDate }),
+      ...(task?.assignee?.id && { assigneeId: task.assignee.id }),
+      ...(task?.assignee?.fName && { assigneeFName: task.assignee.fName }),
+      ...(task?.assignee?.lName && { assigneeLName: task.assignee.lName }),
+      ...(task?.client?.id && { clientId: task.client.id }),
+      ...(task?.client?.name && { clientName: task.client.name }),
+      ...(task?.clientEntity && { clientEntity: task.clientEntity }),
+      ...(task?.type?.id && { taskTypeId: task.type.id }),
+      ...(task?.type?.childName && { taskTypeName: task.type.childName }),
+      ...(task?.type?.parentId && { taskTypeParentId: task.type.parentId }),
+      assignedAt: task.assignedAt,
+      assignedByFName: task.assignedBy?.fName || "",
+      assignedByLName: task.assignedBy?.lName || "",
+    }));
+
     res.status(200).json({
       message: "Fetched users' tasks successfully.",
-      data: tasks,
+      data: modTasks,
       status: 200,
     });
   } else {

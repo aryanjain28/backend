@@ -31,7 +31,11 @@ const taskSchema = new Schema(
       required: true,
       ref: "TaskType",
     },
-    status: { type: String, required: true },
+    status: {
+      type: String,
+      enum: ["PENDING", "COMPLETED", "INCOMPLETE", "APPROVED", "INPROGRESS"],
+      required: true,
+    },
     comments: { type: String, required: false },
     client: { type: Schema.Types.ObjectId, required: false, ref: "Client" },
     clientEntity: { type: Schema.Types.String, required: false, default: "" },
