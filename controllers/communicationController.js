@@ -14,10 +14,6 @@ const sendSms = asyncHandler(async (req, res) => {
         const response = { "Status": "Failure", "Details": "Phone Number not provided" }
         return res.status(400).send(response)
     }
-    if (!type) {
-        const response = { "Status": "Failure", "Details": "Type not provided" }
-        return res.status(400).send(response)
-    }
 
     var params = {
         Message: message,
@@ -30,7 +26,7 @@ const sendSms = asyncHandler(async (req, res) => {
     //Send response back to the client if the message is sent
     publishTextPromise.then(
         function (data) {
-            return res.send({ "Status": "Success", "verification_key": encoded });
+            return res.send({ "Status": "Success", "data": data });
         }).catch(
             function (err) {
                 return res.status(400).send({ "Status": "Failure", "Details": err });
