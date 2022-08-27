@@ -4,6 +4,7 @@ const bcrypt = require("bcryptjs");
 const asynHandler = require("express-async-handler");
 const User = require("../models/userModel");
 const { Task } = require("../models/taskModel");
+const randtoken = require('rand-token');
 
 // @desc Login User
 // @route POST /users/user/login
@@ -17,7 +18,14 @@ const loginUser = asynHandler(async (req, res) => {
     res.status(404).json({ status: 404, message: "User does not exist." });
     throw new Error("User does not exist.");
   }
-
+  const refreshToken = randtoken.uid(256);
+  user.refreshToken = refreshToken;
+  user.save().then((user) => {
+    if(!user) {
+      res.status(404).json({ status: 404, message: "User does not exist." });
+      throw new Error("Error in refresh token generation.");
+    }
+  })
   if (await bcrypt.compare(password, user.password)) {
     res.status(200).json({
       status: 200,
@@ -29,6 +37,7 @@ const loginUser = asynHandler(async (req, res) => {
         email: user.email,
         role: user.role,
         token: generateToken(user._id),
+        refreshToken: user.refreshToken
       },
     });
   } else {
@@ -66,6 +75,7 @@ const registerUser = asynHandler(async (req, res) => {
     email,
     password: hashedPassword,
     role: "STAFF",
+    refreshToken: randtoken.uid(256)
   });
 
   if (user) {
@@ -78,6 +88,8 @@ const registerUser = asynHandler(async (req, res) => {
         lName,
         email,
         token: generateToken(user._id),
+        refreshToken: user.refreshToken
+
       },
     });
   } else {
@@ -123,6 +135,31 @@ const getAllUsers = asynHandler(async (req, res) => {
   }
 });
 
+const newAccessToken = asynHandler(async (req,res) => {
+  const {userId, refreshToken} = req.body.data;
+  const user = await User.findById(userId).exec();
+  if (!user) {
+    res.status(404).json({ status: 404, message: "User does not exist." });
+    throw new Error("User does not exist.");
+  }
+  console.log(refreshToken);
+  console.log(user.refreshToken);
+  if(user.refreshToken != refreshToken){
+    res.status(401).json({status : 401, message: "invalid refresh token"})
+    throw new Error("Invalid refresh token");
+  }
+
+  const newRefreshToken = randtoken.uid(256);
+  user.refreshToken = newRefreshToken;
+  user.save().then((user) => {
+    if(!user) {
+      res.status(404).json({ status: 404, message: "User does not exist." });
+      throw new Error("Error in refresh token generation.");
+    }
+  })
+  res.status(200).json({token : generateToken(user._id), refreshToken: newRefreshToken});
+});
+
 // Generate JWT
 const generateToken = (id) => {
   return jwt.sign({ id }, process.env.JWT_SECRET, { expiresIn: "30d" });
@@ -133,4 +170,5 @@ module.exports = {
   getUserDetails,
   registerUser,
   getAllUsers,
+  newAccessToken
 };

@@ -17,6 +17,8 @@
     "express-async-handler": "^1.2.0",
     "jsonwebtoken": "^8.5.1",
     "mongoose": "^6.4.6",
-    "nodemon": "^2.0.19"
+    "nodemon": "^2.0.19",
+    "oauth20-provider": "^0.6.0",
+    "rand-token": "^1.0.1"
   }
 }
