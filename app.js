@@ -9,6 +9,7 @@ const taskRouter = require("./routers/taskRouter");
 const taskTypeRouter = require("./routers/taskTypeRouter");
 const clientsRouter = require("./routers/clientRouter");
 const utilitiesRouter = require("./routers/utilityRouter");
+const notificationsRouter = require("./routers/notificationRouter");
 
 // express app
 const app = express();
@@ -45,4 +46,5 @@ app.use("/users", userRouter);
 app.use("/tasks", taskRouter);
 app.use("/taskTypes", taskTypeRouter);
 app.use("/clients", clientsRouter);
+app.use("/notifications", notificationsRouter);
 app.use("/utilities", utilitiesRouter);
