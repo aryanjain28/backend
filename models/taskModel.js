@@ -24,7 +24,6 @@ const taskTypeSchema = new Schema(
 
 const taskSchema = new Schema(
   {
-    isNew: { type: Boolean, required: false },
     name: { type: String, required: true },
     type: {
       type: Schema.Types.ObjectId,
@@ -35,6 +34,11 @@ const taskSchema = new Schema(
       type: String,
       enum: ["PENDING", "COMPLETED", "INCOMPLETE", "APPROVED", "INPROGRESS"],
       required: true,
+    },
+    notification: {
+      type: String, //{ type: String, details: Object },
+      required: false,
+      default: {},
     },
     comments: { type: String, required: false },
     client: { type: Schema.Types.ObjectId, required: false, ref: "Client" },
@@ -47,7 +51,6 @@ const taskSchema = new Schema(
     paidAmount: { type: Number, required: false, default: 0 },
     totalAmount: { type: Number, required: true },
     isApproved: { type: Boolean, required: false },
-    updatedOn: { type: Schema.Types.Date, required: false },
     updatedBy: { type: Schema.Types.ObjectId, required: false, ref: "User" },
     approvedBy: { type: Schema.Types.ObjectId, required: false, ref: "User" },
     approvedAt: { type: Schema.Types.Date, required: false, default: null },

@@ -242,9 +242,9 @@ const createNewTask = asynHandler(async (req, res) => {
     type,
     assignee,
     startDate,
-    // optional fields
-    isNew: true,
+    // static fields
     status: "PENDING",
+    // optional fields
     ...(client && { client }),
     ...(entity && { clientEntity: entity }),
     ...(endDate && { endDate }),
@@ -315,13 +315,15 @@ const updateTask = asynHandler(async (req, res) => {
     ...(paidAmount && { paidAmount }),
     ...(clientId && { client: clientId }),
     ...(clientId && clientEntity && { clientEntity }),
+    ...(isAdmin && { notification: "UPDATE" }),
   };
 
   const task = await Task.findOneAndUpdate(
+    { _id: mongoose.Types.ObjectId(taskId) },
     {
-      _id: mongoose.Types.ObjectId(taskId),
+      ...updateBody,
+      updatedBy: req.user._id,
     },
-    { ...updateBody, updatedBy: req.user._id, updatedOn: new Date() },
     { new: true }
   );
 
