@@ -360,27 +360,6 @@ const deleteTask = asynHandler(async (req, res) => {
   }
 });
 
-// dashboard API
-const getDashboardDetails = asynHandler(async (req, res) => {
-  const condition =
-    req.user.role === "ADMIN"
-      ? {}
-      : { _id: mongoose.Types.ObjectId(req.user._id) };
-
-  const data = {
-    APPROVED: 0,
-    COMPLETED: 0,
-    PENDING: 0,
-  };
-  const tasks = await Task.find(condition);
-  tasks.forEach((task) => (data[task.status] += 1));
-  res.json({
-    data,
-    status: 200,
-    message: "Fetched task-dashboard details successfully",
-  });
-});
-
 module.exports = {
   getAllTasks,
   getTask,
@@ -389,5 +368,4 @@ module.exports = {
   updateTask,
   deleteTask,
   getUsersTasks,
-  getDashboardDetails,
 };
