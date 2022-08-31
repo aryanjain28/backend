@@ -77,6 +77,10 @@ const clientSchema = new Schema(
       type: String,
       required: true,
     },
+    businessActivity: {
+      type: String,
+      required: false,
+    },
     entities: {
       type: [String],
       required: false,
@@ -139,10 +143,8 @@ const clientSchema = new Schema(
       default: null,
     },
     businessConstitution: {
-      type: Schema.Types.ObjectId,
+      type: String,
       required: false,
-      default: null,
-      ref: "ConstitutionOfBusiness",
     },
     createdBy: {
       type: Schema.Types.ObjectId,

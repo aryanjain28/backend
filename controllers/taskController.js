@@ -244,6 +244,7 @@ const createNewTask = asynHandler(async (req, res) => {
     startDate,
     // static fields
     status: "PENDING",
+    notification: "NEW",
     // optional fields
     ...(client && { client }),
     ...(entity && { clientEntity: entity }),

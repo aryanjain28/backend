@@ -31,8 +31,6 @@ const getNotifications = asyncHandler(async (req, res) => {
       updatedBy: `${updatedBy.fName || ""} ${updatedBy.lName || ""}`,
     }));
 
-  console.log(modNotifications);
-
   if (notifications) {
     res.status(200).json({
       status: 200,

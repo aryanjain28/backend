@@ -62,13 +62,13 @@ const getClientDetails = asyncHandler(async (req, res) => {
     let clientJson = client.toJSON();
     clientJson = {
       ...clientJson,
-      taxpayerTypeName: clientJson.taxpayerType.name,
-      taxpayerTypeId: clientJson.taxpayerType.id,
-      pincode: clientJson.pincodeRef.pincode,
+      businessConstitution: clientJson.businessConstitution || "",
+      entities: "",
+      taxpayerType: clientJson.taxpayerType.id,
+      pincode: clientJson.pincodeRef._id,
       district: clientJson.pincodeRef.district,
       state: clientJson.pincodeRef.state,
     };
-    delete clientJson.taxpayerType;
     delete clientJson.pincodeRef;
 
     res.status(200).json({
@@ -211,44 +211,10 @@ const createClient = asyncHandler(async (req, res) => {
 // Update Client
 const updateClient = asyncHandler(async (req, res) => {
   const { id: clientId } = req.params;
-  const {
-    gstIn,
-    businessName,
-    entities,
-    registrationDate,
-    legalName,
-    panNumber,
-    taxpayerType,
-    address,
-    city,
-    pincode,
-    primaryMobile,
-    primaryEmail,
-    secondaryMobile,
-    gstUsername,
-    gstPassword,
-    businessConstitution,
-    businessActivity,
-  } = req.body.data;
-
+  const { pincode } = req.body.data;
   const clientUpdateObj = {
-    ...(gstIn && { gstIn }),
-    ...(businessName && { businessName }),
-    ...(entities && { entities }),
-    ...(registrationDate && { registrationDate }),
-    ...(legalName && { legalName }),
-    ...(panNumber && { panNumber }),
-    ...(taxpayerType && { taxpayerType }),
-    ...(address && { address }),
-    ...(city && { city }),
+    ...req.body.data,
     ...(pincode && { pincodeRef: pincode }),
-    ...(primaryMobile && { primaryMobile }),
-    ...(secondaryMobile && { secondaryMobile }),
-    ...(gstUsername && { gstUsername }),
-    ...(gstPassword && { gstPassword }),
-    ...(businessConstitution && { businessConstitution }),
-    ...(businessActivity && { businessActivity }),
-    ...(primaryEmail && { primaryEmail }),
     updatedAt: new Date(),
     updatedBy: req.user._id,
   };
