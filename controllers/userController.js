@@ -3,7 +3,6 @@ const jwt = require("jsonwebtoken");
 const bcrypt = require("bcryptjs");
 const asynHandler = require("express-async-handler");
 const User = require("../models/userModel");
-const { Task } = require("../models/taskModel");
 
 // @desc Login User
 // @route POST /users/user/login
