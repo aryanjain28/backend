@@ -142,8 +142,6 @@ const newAccessToken = asynHandler(async (req,res) => {
     res.status(404).json({ status: 404, message: "User does not exist." });
     throw new Error("User does not exist.");
   }
-  console.log(refreshToken);
-  console.log(user.refreshToken);
   if(user.refreshToken != refreshToken){
     res.status(401).json({status : 401, message: "invalid refresh token"})
     throw new Error("Invalid refresh token");

@@ -33,7 +33,36 @@ const sendSms = asyncHandler(async (req, res) => {
             });
 })
 
+const sendToMultipleUsers = asyncHandler(async (req, res) =>{
+    if (!process.env.AWS_ACCESS_KEY_ID || !process.env.AWS_SECRET_ACCESS_KEY) {
+        const response = { "Status": "Failure", "Details": "OTP for phone is not available right now" }
+        return res.status(503).send(response)
+    }
+    const { phone_numbers, message } = req.body.data;
+    
+
+    if (!phone_numbers) {
+        const response = { "Status": "Failure", "Details": "Phone Number not provided" }
+        return res.status(400).send(response)
+    }
+    const numbers = phone_numbers.split(",");
+    const promiseArray = [];
+
+    numbers.forEach(number => {
+        var params = {
+            Message: message,
+            PhoneNumber: number
+        };
+        promiseArray.push(new AWS.SNS({ apiVersion: '2010-03-31' }).publish(params).promise());
+
+    });
+
+    Promise.all(promiseArray).then(function(data) {res.status(200).json({"Status" : "Success", "data" : data})}).catch(function(err) {console.error(err);});
+
+
+})
 
 module.exports = {
-    sendSms
+    sendSms,
+    sendToMultipleUsers
 }
